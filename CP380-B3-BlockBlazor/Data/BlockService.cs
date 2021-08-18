@@ -13,7 +13,7 @@ namespace CP380_B3_BlockBlazor.Data
     {
         static HttpClient _httpClient;
         private readonly IConfiguration _configure;
-
+        private readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
         public BlockService(IHttpClientFactory HttpClientFactory, IConfiguration Configure)
         {
             _httpClient = HttpClientFactory.CreateClient();
@@ -35,5 +35,19 @@ namespace CP380_B3_BlockBlazor.Data
             return Array.Empty<Block>();
 
         }
-}
+        public async Task<Block> SubmitNewBlockAsync(Block block)
+        {
+            var content = new StringContent(
+               JsonSerializer.Serialize(block, JsonSerializerOptions),
+               System.Text.Encoding.UTF8,
+               "application/json"
+               );
+
+            var res = await _httpClient.PostAsync(_configure["url"], content);
+            if (res.IsSuccessStatusCode)
+                return block;
+            else
+                return null;
+        }
+    }
 }
